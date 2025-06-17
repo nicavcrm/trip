@@ -122,7 +122,7 @@ export default {
 
     async loadGeoData() {
       try {
-        const response = await fetch('/geo.json')
+        const response = await fetch('./geo.json')
         if (!response.ok) {
           throw new Error('Failed to load geo data')
         }
