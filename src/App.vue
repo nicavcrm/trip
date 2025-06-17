@@ -23,30 +23,20 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue'
 import InfoModal from './components/InfoModal.vue'
 import MapComponent from './components/MapComponent.vue'
 
-export default {
-  name: 'App',
-  components: {
-    MapComponent,
-    InfoModal
-  },
-  data() {
-    return {
-      selectedPoint: null,
-      pathStats: []
-    }
-  },
-  methods: {
-    onPointClicked(pointData) {
-      this.selectedPoint = pointData
-    },
-    onStatsUpdated(stats) {
-      this.pathStats = stats
-    }
-  }
+const selectedPoint = ref(null)
+const pathStats = ref([])
+
+const onPointClicked = (pointData) => {
+  selectedPoint.value = pointData
+}
+
+const onStatsUpdated = (stats) => {
+  pathStats.value = stats
 }
 </script>
 

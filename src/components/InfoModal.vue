@@ -131,120 +131,112 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'InfoModal',
-  props: {
-    pointData: {
-      type: Object,
-      required: true
+<script setup>
+import { computed, onBeforeUnmount, onMounted } from 'vue'
+
+const props = defineProps({
+  pointData: {
+    type: Object,
+    required: true
+  }
+})
+
+const emit = defineEmits(['close'])
+
+const hasFlightData = computed(() => {
+  const properties = props.pointData.properties
+  return properties.gps_alt !== undefined ||
+         properties.height !== undefined ||
+         properties.attitude_head !== undefined ||
+         properties.imu_yaw !== undefined ||
+         properties.imu_pitch !== undefined ||
+         properties.imu_roll !== undefined
+})
+
+const hasSensorData = computed(() => {
+  const properties = props.pointData.properties
+  return properties.battery !== undefined ||
+         properties.temperature !== undefined ||
+         properties.humidity !== undefined ||
+         properties.gps_accuracy !== undefined
+})
+
+const hasDeviceData = computed(() => {
+  const properties = props.pointData.properties
+  return properties.device_id || properties.device_type
+})
+
+const hasGyroData = computed(() => {
+  const properties = props.pointData.properties
+  return properties.gyro_x !== undefined ||
+         properties.gyro_y !== undefined ||
+         properties.gyro_z !== undefined
+})
+
+const additionalProperties = computed(() => {
+  const properties = props.pointData.properties
+  const knownProps = new Set([
+    'topic', 'timestamp', 'gps_alt', 'height', 'attitude_head',
+    'imu_yaw', 'imu_pitch', 'imu_roll', 'battery', 'temperature',
+    'humidity', 'gps_accuracy', 'device_id', 'device_type',
+    'gyro_x', 'gyro_y', 'gyro_z', 'feature_index', 'point_index', 'unique_id'
+  ])
+
+  const additional = {}
+  Object.keys(properties).forEach(key => {
+    if (!knownProps.has(key) && properties[key] !== undefined && properties[key] !== null) {
+      additional[key] = properties[key]
     }
-  },
-  emits: ['close'],
-  data() {
-    return {
-      handleEscape: null
-    }
-  },
-  computed: {
-    hasFlightData() {
-      const props = this.pointData.properties
-      return props.gps_alt !== undefined ||
-             props.height !== undefined ||
-             props.attitude_head !== undefined ||
-             props.imu_yaw !== undefined ||
-             props.imu_pitch !== undefined ||
-             props.imu_roll !== undefined
-    },
+  })
 
-    hasSensorData() {
-      const props = this.pointData.properties
-      return props.battery !== undefined ||
-             props.temperature !== undefined ||
-             props.humidity !== undefined ||
-             props.gps_accuracy !== undefined
-    },
+  return additional
+})
 
-    hasDeviceData() {
-      const props = this.pointData.properties
-      return props.device_id || props.device_type
-    },
+const hasAdditionalProperties = computed(() => {
+  return Object.keys(additionalProperties.value).length > 0
+})
 
-    hasGyroData() {
-      const props = this.pointData.properties
-      return props.gyro_x !== undefined ||
-             props.gyro_y !== undefined ||
-             props.gyro_z !== undefined
-    },
+const formatCoordinate = (coord, type) => {
+  const abs = Math.abs(coord)
+  const degrees = Math.floor(abs)
+  const minutes = (abs - degrees) * 60
+  const direction = type === 'lat' ? (coord >= 0 ? 'N' : 'S') : (coord >= 0 ? 'E' : 'W')
+  return `${degrees}°${minutes.toFixed(4)}'${direction}`
+}
 
-    additionalProperties() {
-      const props = this.pointData.properties
-      const knownProps = new Set([
-        'topic', 'timestamp', 'gps_alt', 'height', 'attitude_head',
-        'imu_yaw', 'imu_pitch', 'imu_roll', 'battery', 'temperature',
-        'humidity', 'gps_accuracy', 'device_id', 'device_type',
-        'gyro_x', 'gyro_y', 'gyro_z', 'feature_index', 'point_index', 'unique_id'
-      ])
-
-      const additional = {}
-      Object.keys(props).forEach(key => {
-        if (!knownProps.has(key) && props[key] !== undefined && props[key] !== null) {
-          additional[key] = props[key]
-        }
-      })
-
-      return additional
-    },
-
-    hasAdditionalProperties() {
-      return Object.keys(this.additionalProperties).length > 0
-    }
-  },
-  methods: {
-    formatCoordinate(coord, type) {
-      const abs = Math.abs(coord)
-      const degrees = Math.floor(abs)
-      const minutes = (abs - degrees) * 60
-      const direction = type === 'lat' ? (coord >= 0 ? 'N' : 'S') : (coord >= 0 ? 'E' : 'W')
-      return `${degrees}°${minutes.toFixed(4)}'${direction}`
-    },
-
-    formatTimestamp(timestamp) {
-      try {
-        const date = new Date(timestamp)
-        return date.toLocaleString()
-      } catch (e) {
-        return timestamp
-      }
-    },
-
-    formatPropertyName(key) {
-      return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-    },
-
-    formatPropertyValue(value) {
-      if (typeof value === 'number') {
-        return Number.isInteger(value) ? value.toString() : value.toFixed(2)
-      }
-      return String(value)
-    }
-  },  mounted() {
-    // Close modal on Escape key
-    this.handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        this.$emit('close')
-      }
-    }
-    document.addEventListener('keydown', this.handleEscape)
-  },
-
-  beforeUnmount() {
-    // Cleanup event listener
-    if (this.handleEscape) {
-      document.removeEventListener('keydown', this.handleEscape)
-    }
+const formatTimestamp = (timestamp) => {
+  try {
+    const date = new Date(timestamp)
+    return date.toLocaleString()
+  } catch (e) {
+    return timestamp
   }
 }
+
+const formatPropertyName = (key) => {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+const formatPropertyValue = (value) => {
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? value.toString() : value.toFixed(2)
+  }
+  return String(value)
+}
+
+const handleEscape = (e) => {
+  if (e.key === 'Escape') {
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleEscape)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleEscape)
+})
 </script>
 
 <style scoped>
@@ -266,9 +258,9 @@ export default {
   background: white;
   border-radius: 8px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
+  max-width: 800px;
   width: 100%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
 }
 
@@ -336,6 +328,12 @@ export default {
 @media (min-width: 480px) {
   .info-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 }
 

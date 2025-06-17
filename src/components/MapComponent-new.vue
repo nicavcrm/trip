@@ -5,7 +5,7 @@
       <div class="loading-spinner"></div>
       <p>Loading map...</p>
     </div>
-    
+
     <!-- Error overlay - outside map container to fix Mapbox warning -->
     <div v-if="error" class="error-overlay">
       <p>{{ error }}</p>
@@ -14,7 +14,22 @@
     <!-- Map container - kept empty to fix Mapbox warning -->
     <div ref="mapContainer" class="map-container"></div>
 
-    <!-- Active Topics Legend - moved above dropdown -->
+    <!-- Topic Filter -->
+    <div v-if="!loading && !error && geoData && geoData.features" class="topic-filter">
+      <label for="topic-select">Filter by Topic:</label>
+      <select id="topic-select" v-model="selectedTopic">
+        <option value="all">Show All Topics</option>
+        <option
+          v-for="(feature, index) in geoData.features"
+          :key="index"
+          :value="index"
+        >
+          {{ feature.properties.topic }} ({{ getPointCount(feature) }} points)
+        </option>
+      </select>
+    </div>
+
+    <!-- Legend -->
     <div v-if="!loading && !error && geoData && geoData.features" class="map-legend">
       <h4>Active Topics</h4>
       <div
@@ -30,28 +45,13 @@
         <span class="legend-count">({{ getPointCount(feature) }} points)</span>
       </div>
     </div>
-
-    <!-- Topic Filter - moved below legend -->
-    <div v-if="!loading && !error && geoData && geoData.features" class="topic-filter">
-      <label for="topic-select">Filter by Topic:</label>
-      <select id="topic-select" v-model="selectedTopic">
-        <option value="all">Show All Topics</option>
-        <option
-          v-for="(feature, index) in geoData.features"
-          :key="index"
-          :value="index"
-        >
-          {{ feature.properties.topic }} ({{ getPointCount(feature) }} points)
-        </option>
-      </select>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const emit = defineEmits(['point-clicked', 'stats-updated'])
 
@@ -236,7 +236,7 @@ const createPointFeatures = () => {
 
     coordinates.forEach((coord, pointIndex) => {
       const pointProperties = pointsProperties[pointIndex] || {}
-      
+
       pointFeatures.push({
         type: 'Feature',
         geometry: {
@@ -426,15 +426,14 @@ onBeforeUnmount(() => {
 
 .topic-filter {
   position: absolute;
-  top: 130px;
+  top: 10px;
   left: 10px;
   background: rgba(255, 255, 255, 0.95);
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   font-size: 14px;
-  min-width: 300px;
 }
 
 .topic-filter label {
@@ -445,9 +444,8 @@ onBeforeUnmount(() => {
 }
 
 .topic-filter select {
-  width: 100%;
-  min-width: 280px;
-  padding: 8px;
+  width: 200px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: white;
@@ -456,15 +454,14 @@ onBeforeUnmount(() => {
 .map-legend {
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 10px;
   background: rgba(255, 255, 255, 0.95);
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   font-size: 12px;
-  min-width: 300px;
-  max-width: 350px;
+  max-width: 200px;
 }
 
 .map-legend h4 {
