@@ -82,7 +82,7 @@ export default {
     async initializeMap() {
       try {
         // Check for Mapbox token
-        const token = import.meta.env.VITE_MAPBOX_TOKEN
+        const token = import.meta.env.VITE_MAPBOX_TOKEN || "pk.eyJ1IjoiYXZjcm0iLCJhIjoiY2xhZHVlYng0MGhlbTNwcWt6d3BvYXN1NyJ9.kzEn37oH9cDgdG0Cw_0Cbw"
         if (!token || token === 'your_mapbox_access_token_here') {
           throw new Error('Please set your Mapbox access token in the .env file')
         }
