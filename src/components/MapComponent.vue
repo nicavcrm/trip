@@ -5,7 +5,7 @@
       <div class="loading-spinner"></div>
       <p>Loading map...</p>
     </div>
-    
+
     <!-- Error overlay - outside map container to fix Mapbox warning -->
     <div v-if="error" class="error-overlay">
       <p>{{ error }}</p>
@@ -49,9 +49,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 const emit = defineEmits(['point-clicked', 'stats-updated'])
 
@@ -236,7 +236,7 @@ const createPointFeatures = () => {
 
     coordinates.forEach((coord, pointIndex) => {
       const pointProperties = pointsProperties[pointIndex] || {}
-      
+
       pointFeatures.push({
         type: 'Feature',
         geometry: {
@@ -502,5 +502,56 @@ onBeforeUnmount(() => {
   color: #666;
   font-size: 11px;
   flex-shrink: 0;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .map-legend {
+    min-width: 200px;
+    max-width: 250px;
+    padding: 10px;
+    font-size: 11px;
+  }
+
+  .map-legend h4 {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .legend-item {
+    margin-bottom: 4px;
+    gap: 6px;
+  }
+
+  .legend-color {
+    width: 10px;
+    height: 10px;
+  }
+
+  .legend-topic {
+    font-size: 11px;
+  }
+
+  .legend-count {
+    font-size: 10px;
+  }
+
+  .topic-filter {
+    min-width: 200px;
+    padding: 8px;
+    font-size: 12px;
+    top: 110px;
+  }
+
+  .topic-filter label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .topic-filter select {
+    min-width: 180px;
+    padding: 6px;
+    font-size: 12px;
+  }
 }
 </style>

@@ -87,4 +87,26 @@ body {
   position: relative;
   overflow: hidden;
 }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0.5rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .stats {
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .stat-item {
+    padding: 0.3rem;
+    font-size: 0.75rem;
+  }
+}
 </style>
